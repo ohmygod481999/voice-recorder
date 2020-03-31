@@ -11,7 +11,6 @@ class Recorder():
         self.RATE = 44100
         self.RECORD_SECONDS = 5
         self.WAVE_OUTPUT_FILENAME = "output.wav"
-        self.p = pyaudio.PyAudio()
         self.recording = False
         self.frames = []
 
@@ -25,7 +24,9 @@ class Recorder():
 
             return in_data, callback_flag
 
+        self.frames = []
         self.recording = True
+        self.p = pyaudio.PyAudio()
         self.stream = self.p.open(format=self.FORMAT,
                                   channels=self.CHANNELS,
                                   rate=self.RATE,
@@ -41,12 +42,18 @@ class Recorder():
         self.stream.stop_stream()
         self.stream.close()
         self.p.terminate()
+        self.stream = None
+        return self.frames
 
-        wf = wave.open(self.WAVE_OUTPUT_FILENAME, 'wb')
+    def resetFrame(self):
+        self.frames = []
+
+    def writeFile(self, frame,  fileName):
+        wf = wave.open(fileName, 'wb')
         wf.setnchannels(self.CHANNELS)
         wf.setsampwidth(self.p.get_sample_size(self.FORMAT))
         wf.setframerate(self.RATE)
-        wf.writeframes(b''.join(self.frames))
+        wf.writeframes(b''.join(frame))
         wf.close()
 
 
